@@ -93,5 +93,16 @@ public class ChatClient extends AbstractClient
     catch(IOException e) {}
     System.exit(0);
   }
+  
+  @Override
+  protected void connectionClosed() {
+	clientUI.display("Server has shut down");
+	quit();
+  }
+  @Override
+  protected void connectionException(Exception exception) {
+	clientUI.display("Server has shut down unexpectedly");
+	quit();
+  }
 }
 //End of ChatClient class
