@@ -82,11 +82,46 @@ public class ClientConsole implements ChatIF
     {
 
       String message;
-
+      
       while (true) 
       {
         message = fromConsole.nextLine();
-        client.handleMessageFromClientUI(message);
+        if (message.startsWith("#")) {
+        	if (message.startsWith("#quit")) {
+        		// code to quit
+        		client.quit();
+        		// note that this already checks if the client is disconnected
+        		// because of how quit() and closeConnection() work
+        	}
+        	else if (message.startsWith("#logoff")) {
+        		// code do disconnect the client 
+        		// without quitting 
+        		try {
+        			client.closeConnection();
+        		}
+        		catch (IOException e) {
+        			System.out.println("Error while logging off "+ e.getMessage());
+        		}
+        	}
+        	else if (message.startsWith("#sethost")) {
+        		
+        	}
+        	else if (message.startsWith("#setport")) {
+        		
+        	}
+        	else if (message.startsWith("#login")) {
+        		
+        	}
+        	else if (message.startsWith("#gethost")) {
+        		
+        	}
+        	else if (message.startsWith("#getport")) {
+        		
+        	}
+        } else {
+        	client.handleMessageFromClientUI(message);
+        }
+        
       }
     } 
     catch (Exception ex) 
