@@ -85,7 +85,7 @@ public class ClientConsole implements ChatIF
       
       while (true) 
       {
-        message = fromConsole.nextLine();
+        message = fromConsole.nextLine().trim();
         if (message.startsWith("#")) {
         	if (message.startsWith("#quit")) {
         		// code to quit
@@ -118,16 +118,42 @@ public class ClientConsole implements ChatIF
         		}
         	}
         	else if (message.startsWith("#setport")) {
-        		
+        		if(client.isConnected() == false) {
+        			// call setPort method
+        			String[] parts = message.split("<");
+        			if (parts.length>=2) {
+        				int port = Integer.parseInt(parts[1].replace(">", ""));
+        				client.setPort(port);
+        			}
+        		}
+        		else {
+        			// display error message
+        			this.display("Error: you cannot set port unless you are logged off");
+        		}
         	}
         	else if (message.startsWith("#login")) {
-        		
+        		if(client.isConnected() == false) {
+        			// log in
+        			try {
+        				client.openConnection();
+        			}
+        			catch (IOException e) {
+        				this.display("Error: "+e.getMessage());
+        			}
+        		}
+        		else {
+        			// display error message
+        			this.display("Error: You are already logged in");
+        		}
         	}
         	else if (message.startsWith("#gethost")) {
-        		
+        		this.display(client.getHost());
         	}
         	else if (message.startsWith("#getport")) {
-        		
+        		this.display(String.valueOf(client.getPort()));
+        	}
+        	else {
+        		this.display("Error: unknown command");
         	}
         } else {
         	client.handleMessageFromClientUI(message);
