@@ -104,7 +104,18 @@ public class ClientConsole implements ChatIF
         		}
         	}
         	else if (message.startsWith("#sethost")) {
-        		
+        		if(client.isConnected() == false) {
+        			// call setHost method
+        			String[] parts = message.split("<");
+        			if (parts.length>=2) {
+        				String host = parts[1].replace(">", "");
+        				client.setHost(host);
+        			}
+        		}
+        		else {
+        			// display error message
+        			this.display("Error: you cannot set host unless you are logged off");
+        		}
         	}
         	else if (message.startsWith("#setport")) {
         		
