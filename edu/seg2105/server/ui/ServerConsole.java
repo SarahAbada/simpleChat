@@ -8,6 +8,7 @@ import edu.seg2105.edu.server.backend.EchoServer;
 import edu.seg2105.client.common.*;
 // these two imports above are needed for the methods the class must use
 
+
 public class ServerConsole implements ChatIF{
 	
 	  //Class variables *************************************************
@@ -24,7 +25,10 @@ public class ServerConsole implements ChatIF{
 	   */
 	  EchoServer server;
 	  
-	  
+	  /**
+	   * Variable tracking whether the server is closed
+	   */
+	  boolean isClosed;
 	  
 	  /**
 	   * Scanner to read from the console
@@ -42,7 +46,13 @@ public class ServerConsole implements ChatIF{
 	  public ServerConsole(int port) 
 	  {
 	    server= new EchoServer(port);
-	    
+	    try {
+			server.listen();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    isClosed = false;
 	    // Create scanner object to read from console
 	    fromConsole = new Scanner(System.in); 
 	  }
@@ -68,6 +78,7 @@ public class ServerConsole implements ChatIF{
 	        		// code to quit
 	        		try {
 	        			server.close();
+	        			isClosed = true;
 	        		}
 	        		catch(IOException e) {
 	        			this.display("Error in quitting the server: "+ e.getMessage());
@@ -88,31 +99,33 @@ public class ServerConsole implements ChatIF{
 	        	else if (message.startsWith("#close")) {
 	        		try {
 	        			server.close();
+	        			isClosed = true;
 	        		}
 	        		catch(IOException e) {
-	        			this.display("Error in quitting the server: "+ e.getMessage());
+	        			this.display("Error in closing the server: "+ e.getMessage());
 	        		}
 	        		
 	        	}
 	        	else if (message.startsWith("#setport")) {
-	        		if(client.isConnected() == false) {
+	        		if(isClosed == true) {
 	        			// call setPort method
 	        			String[] parts = message.split("<");
 	        			if (parts.length>=2) {
 	        				int port = Integer.parseInt(parts[1].replace(">", ""));
-	        				client.setPort(port);
+	        				server.setPort(port);
 	        			}
 	        		}
 	        		else {
 	        			// display error message
-	        			this.display("Error: you cannot set port unless you are logged off");
+	        			this.display("Error: you cannot set port unless the server is closed");
 	        		}
 	        	}
-	        	else if (message.startsWith("#login")) {
-	        		if(client.isConnected() == false) {
+	        	else if (message.startsWith("#start")) {
+	        		if(server.isListening() == false) {
 	        			// log in
 	        			try {
-	        				client.openConnection();
+	        				server.listen();
+	        				isClosed = false;
 	        			}
 	        			catch (IOException e) {
 	        				this.display("Error: "+e.getMessage());
@@ -120,14 +133,11 @@ public class ServerConsole implements ChatIF{
 	        		}
 	        		else {
 	        			// display error message
-	        			this.display("Error: You are already logged in");
+	        			this.display("Error: the server is already listening");
 	        		}
 	        	}
-	        	else if (message.startsWith("#gethost")) {
-	        		this.display(client.getHost());
-	        	}
 	        	else if (message.startsWith("#getport")) {
-	        		this.display(String.valueOf(client.getPort()));
+	        		this.display(String.valueOf(server.getPort()));
 	        	}
 	        	else {
 	        		this.display("Error: unknown command");
@@ -157,5 +167,28 @@ public class ServerConsole implements ChatIF{
 	  }
 
 	  
+	  //Class methods ***************************************************
 	  
+	  /**
+	   * This method is responsible for the creation of the Server UI.
+	   *
+	   * @param args[0] the port to connect to 
+	   */
+	  public static void main(String[] args) 
+	  {
+	    
+	    int port = 0;
+
+	    try
+	    {
+	      port = Integer.parseInt(args[0]);
+	    }
+	    catch(ArrayIndexOutOfBoundsException e)
+	    {
+	      port = DEFAULT_PORT;
+	    }
+	    ServerConsole theServer= new ServerConsole(port);
+	    theServer.accept();  //Wait for console data
+	  }
+
 }
