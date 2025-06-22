@@ -4,6 +4,8 @@ package edu.seg2105.edu.server.backend;
 // license found at www.lloseng.com 
 
 
+import java.io.IOException;
+
 import ocsf.server.*;
 
 /**
@@ -48,8 +50,48 @@ public class EchoServer extends AbstractServer
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
-    System.out.println("Message received: " + msg + " from " + client);
-    this.sendToAllClients(msg);
+    if(msg instanceof String) {
+    	String message = (String) msg;
+    	if (message.startsWith("#login")) {
+    		// handle login
+    		if (client.getInfo("Login id") != null) {
+    			try {
+					client.sendToClient("Error: you can only log in once.");
+					return;
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+    			
+    		} else {
+    			String[] parts = message.split("[<>]");
+    			if (parts.length>=2) {
+    				String theUid = parts[1];
+    				client.setInfo("Login id",theUid);
+    			}
+    			else {
+    				System.out.println("Invalid login format. Use #login<your_id>");
+    			}
+    		}
+    		
+    	}
+    	else {
+    		if (client.getInfo("Login id") != null) {
+    			// append uid to message and echo to all clients
+        		String msgWuid = "["+(String)client.getInfo("Login id")+"]: " + message;
+        		sendToAllClients(msgWuid);
+    		} else {
+    			try {
+					client.sendToClient("Error: you must be logged in to send messages.");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+    			return;
+    		}
+    		
+    	}
+          
+    }
+	
   }
     
   /**
