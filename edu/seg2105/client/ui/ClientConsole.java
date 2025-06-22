@@ -50,11 +50,11 @@ public class ClientConsole implements ChatIF
    * @param host The host to connect to.
    * @param port The port to connect on.
    */
-  public ClientConsole(String host, int port) 
+  public ClientConsole(String uid, String host, int port) 
   {
     try 
     {
-      client= new ChatClient(host, port, this);
+      client= new ChatClient(uid, host, port, this);
       
       
     } 
@@ -191,19 +191,37 @@ public class ClientConsole implements ChatIF
   {
     String host = "";
     int port = 0;
-
+    String uid = null;
+    try {
+    	uid = args[0];
+    }
+    catch(ArrayIndexOutOfBoundsException e) {
+    	System.out.println("Error: cannot connect to server without user id");
+    	System.exit(1);
+    }
     try
     {
-      host = args[0];
-      port = Integer.parseInt(args[1]);
+      host = args[1];
+      port = Integer.parseInt(args[2]);
     }
     catch(ArrayIndexOutOfBoundsException e)
     {
       host = "localhost";
       port = DEFAULT_PORT;
     }
-    ClientConsole chat= new ClientConsole(host, port);
+    ClientConsole chat= new ClientConsole(uid, host, port);
+    
+    try {
+    	chat.client.openConnection();
+    	chat.client.handleMessageFromClientUI("#login<" + chat.client.getUid() + ">");
+    }
+    catch(IOException e) {
+    	System.out.println("Could not open connection: " + e.getMessage());
+    	System.exit(1);
+    }
+    
     chat.accept();  //Wait for console data
+    
   }
 }
 //End of ConsoleChat class
